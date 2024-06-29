@@ -3,7 +3,7 @@ import { requiredValidation } from "../../lib/utils/validations.js";
 import { findUserWithEmail } from "../../lib/db/queries/user.js";
 import { ApiError } from "../../lib/errors/api-error.js";
 import { isPasswordMatch } from "../../lib/utils/password-hashing.js";
-import jwt from "jsonwebtoken";
+import { signToken } from "../../lib/utils/sign-verify-token.js";
 
 type LoginType = {
   email: string;
@@ -41,9 +41,12 @@ export const login = async (
       );
     }
 
-    const token = jwt.sign(
+    const token = signToken(
       { id: user.id, email: user.email },
       process.env.JWT_SECRET_KEY,
+      {
+        expiresIn: "1d",
+      },
     );
 
     return res

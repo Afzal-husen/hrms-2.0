@@ -3,6 +3,7 @@ import { ApiError } from "../../lib/errors/api-error.js";
 import { UserData } from "../../lib/types/user.js";
 import { createUser, findUserWithEmail } from "../../lib/db/queries/user.js";
 import { hashPassword } from "../../lib/utils/password-hashing.js";
+import { requiredValidation } from "../../lib/utils/validations.js";
 
 export const signUp = async (
   req: Request,
@@ -14,10 +15,7 @@ export const signUp = async (
 
     const keys = ["name", "email", "password", "mobile", "address"];
 
-    for (const key of keys) {
-      if (!req.body[key])
-        return next(new ApiError({ code: 400, message: `${key} is required` }));
-    }
+    requiredValidation(req.body, keys, next);
 
     const userExists = await findUserWithEmail(email);
 

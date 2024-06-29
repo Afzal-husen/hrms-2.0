@@ -1,25 +1,25 @@
 import { Request, Response, NextFunction } from "express";
-import prisma from "../../lib/prisma-client.js";
 import { ApiError } from "../../lib/errors/api-error.js";
+import { UserData } from "../../lib/types/user.js";
+import { createUser, findUserWithEmail } from "../../lib/db/queries/user.js";
+import { hashPassword } from "../../lib/utils/password-hashing.js";
 
-type User = {
-  readonly id: string;
-  name: string;
-  email: string;
-  password: string;
-  mobile: string;
-  address: string;
-};
-
-const signUp = async (req: Request, res: Response, next: NextFunction) => {
+export const signUp = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-    const { name, email, password, mobile, address }: User = req.body;
+    const { name, email, password, mobile, address }: UserData = req.body;
 
-    const userExists = await prisma.users.findFirst({
-      where: {
-        email,
-      },
-    });
+    const keys = ["name", "email", "password", "mobile", "address"];
+
+    for (const key of keys) {
+      if (!req.body[key])
+        return next(new ApiError({ code: 400, message: `${key} is required` }));
+    }
+
+    const userExists = await findUserWithEmail(email);
 
     if (userExists) {
       return next(
@@ -30,15 +30,19 @@ const signUp = async (req: Request, res: Response, next: NextFunction) => {
       );
     }
 
-    prisma.users.create({
-      data: {
-        name,
-        email,
-        password,
-        mobile,
-        address,
-      },
+    const hashedPassword = hashPassword(password);
+
+    await createUser({
+      name,
+      email,
+      address,
+      mobile,
+      password: hashedPassword,
     });
+
+    return res
+      .status(200)
+      .json({ success: true, message: "User successfully registered" });
   } catch (error) {
     next(error);
   }

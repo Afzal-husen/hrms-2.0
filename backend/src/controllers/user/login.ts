@@ -3,6 +3,7 @@ import { requiredValidation } from "../../lib/utils/validations.js";
 import { findUserWithEmail } from "../../lib/db/queries/user.js";
 import { ApiError } from "../../lib/errors/api-error.js";
 import { isPasswordMatch } from "../../lib/utils/password-hashing.js";
+import jwt from "jsonwebtoken";
 
 type LoginType = {
   email: string;
@@ -39,7 +40,19 @@ export const login = async (
         }),
       );
     }
-    
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET_KEY,
+    );
+
+    return res
+      .cookie("user-token", token, {
+        httpOnly: true,
+        maxAge: 1000 * 60 * 60 * 24,
+      })
+      .status(200)
+      .json({ success: true, message: "Login successful" });
   } catch (error) {
     next(error);
   }

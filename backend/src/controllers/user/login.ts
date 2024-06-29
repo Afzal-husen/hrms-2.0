@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from "express";
-import { requiredValidation } from "../../lib/utils/validations.js";
 import { findUserWithEmail } from "../../lib/db/queries/user.js";
 import { ApiError } from "../../lib/errors/api-error.js";
 import { isPasswordMatch } from "../../lib/utils/password-hashing.js";
@@ -18,9 +17,10 @@ export const login = async (
   try {
     const { email, password }: LoginType = req.body;
 
-    const keys = ["email", "password"];
-
-    requiredValidation(req.body, keys, next);
+    if (!email)
+      return next(new ApiError({ code: 400, message: "Email is Required" }));
+    if (!password)
+      return next(new ApiError({ code: 400, message: "Password is Required" }));
 
     const user = await findUserWithEmail(email);
 

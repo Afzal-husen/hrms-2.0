@@ -2,9 +2,9 @@ import express from "express";
 import { signUp } from "../controllers/user/sign-up.js";
 import { login } from "../controllers/user/login.js";
 
-const router = express();
+const userRouter = express.Router();
 
-router.post("/signup", signUp);
-router.post("/login", login);
+userRouter.post("/signup", signUp);
+userRouter.post("/login", login);
 
-export default router;
+export { userRouter };

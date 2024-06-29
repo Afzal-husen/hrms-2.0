@@ -1,9 +1,11 @@
 import express from "express";
-import userRouter from "./routes/user.js";
-import { errorHandler } from "./middlewares/error-handler.js";
-import cookieParser from "cookie-parser";
-import helmet from "helmet";
 import morgan from "morgan";
+import helmet from "helmet";
+import cookieParser from "cookie-parser";
+import { errorHandler } from "./middlewares/error-handler.js";
+import { userRouter } from "./routes/user.js";
+import { branchRouter } from "./routes/branch.js";
+import { roleRouter } from "./routes/role.js";
 
 const app = express();
 
@@ -15,6 +17,8 @@ app.use(morgan("combined"));
 
 //api routes
 app.use("/api/users", userRouter);
+app.use("/api/branches", branchRouter);
+app.use("/api/roles", roleRouter);
 
 // error handler
 app.use(errorHandler);
